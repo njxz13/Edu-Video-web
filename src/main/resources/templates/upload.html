@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传视频 - EduVideo</title>
+    <link rel="stylesheet" th:href="@{/css/upload.css}">
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-header">
+            <h1>上传视频</h1>
+            <p>分享你的知识，让更多人受益</p>
+        </div>
+
+        <div th:if="${error}" class="error-message">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div th:if="${success}" class="success-message">
+            <span th:text="${success}"></span>
+        </div>
+
+        <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+            <div class="form-group">
+                <label for="title">视频标题 *</label>
+                <input type="text" id="title" name="title" required 
+                       placeholder="请输入视频标题（最多 200 字）" maxlength="200">
+            </div>
+
+            <div class="form-group">
+                <label for="description">视频描述</label>
+                <textarea id="description" name="description" rows="5" 
+                          placeholder="简要介绍你的视频内容..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">视频分类 *</label>
+                    <select id="category" name="category" required>
+                        <option value="">请选择分类</option>
+                        <option value="7">Java 开发</option>
+                        <option value="8">Python 开发</option>
+                        <option value="9">前端开发</option>
+                        <option value="10">UI 设计</option>
+                        <option value="1">编程开发</option>
+                        <option value="2">产品设计</option>
+                        <option value="3">设计创意</option>
+                        <option value="4">市场营销</option>
+                        <option value="5">语言学习</option>
+                        <option value="6">职场技能</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">标签</label>
+                    <input type="text" id="tags" name="tags" 
+                           placeholder="用逗号分隔多个标签，如：java,入门，编程">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="videoFile">视频文件 *</label>
+                <div class="file-upload-area">
+                    <input type="file" id="videoFile" name="videoFile" accept=".mp4,.avi,.mov,.wmv,.flv" required>
+                    <p class="file-hint">支持 MP4、AVI、MOV 格式，最大 500MB</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="coverFile">封面图片</label>
+                <div class="file-upload-area">
+                    <input type="file" id="coverFile" name="coverFile" accept="image/*">
+                    <p class="file-hint">建议尺寸 1280x720，支持 JPG、PNG 格式</p>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">上传视频</button>
+                <a href="/videos" class="btn-cancel">返回列表</a>
+                <a href="/home" class="btn-cancel">返回首页</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 验证文件大小
+        document.getElementById('videoFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.size > 500 * 1024 * 1024) {
+                alert('视频文件大小不能超过 500MB');
+                this.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

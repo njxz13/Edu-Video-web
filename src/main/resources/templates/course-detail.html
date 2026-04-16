@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${course.title}">课程详情</title>
+    <link rel="stylesheet" th:href="@{/css/course-detail.css}">
+
+</head>
+
+<body>
+    <!-- 修复：添加缺失的 header 标签 -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">E</div>
+            <div class="nav">
+                <span th:if="${session.username}" class="welcome">欢迎, <span th:text="${session.username}"></span></span>
+                <a href="/home">首页</a>
+                <a href="/profile">个人中心</a>
+                <a href="/logout">退出登录</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="course-header">
+            <img th:src="${course.coverImage}" alt="${course.title} ?: '课程封面图片'" title="${course.title} ?: '课程封面图片'" class="course-cover" />
+            <div class="course-info">
+                <h1 th:text="${course.title}"></h1>
+                <p th:text="${course.description}"></p>
+                <div class="course-meta">
+                    <span class="video-count" th:text="${videos.size() + ' 个视频'}">0 个视频</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-section">
+            <div class="video-list">
+                <h2>课程视频</h2>
+                <div th:if="${videos.isEmpty()}" class="empty-videos">
+                    <p>暂无视频内容</p>
+                </div>
+                <div th:unless="${videos.isEmpty()}">
+                    <div class="video-item" th:each="video : ${videos}">
+                        <a th:href="@{'/course/' + ${course.id} + '/video/' + ${video.id}}">
+                            <span class="video-title" th:text="${video.orderNumber + '. ' + video.title}"></span>
+                            <span class="video-duration" th:text="${video.duration}"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-preview">
+                <h2>开始学习</h2>
+                <div th:if="${videos.isEmpty()}" class="video-placeholder">
+                    <p>暂无视频内容</p>
+                </div>
+                <div th:unless="${videos.isEmpty()}">
+                    <div class="video-placeholder">
+                        <p>选择左侧视频开始学习</p>
+                    </div>
+                    <a th:href="@{'/course/' + ${course.id} + '/video/' + ${videos[0].id}}" class="start-btn">
+                        开始学习第1课
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Edu-Video. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

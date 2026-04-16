@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页 - EduVideo</title>
+  <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+
+<body>
+  <div class="home-container">
+    <div class="home-header">
+      <div class="logo">E</div>
+      <div>
+        <h1>EduVideo</h1>
+        <p>教育视频平台</p>
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li th:if="${session.username}"><span th:text="'欢迎，' + ${session.username}"></span></li>
+        <li><a href="/videos">视频广场</a></li>
+        <li><a href="/profile">个人中心</a></li>
+        <li th:if="${session.adminRole}"><a href="/admin/dashboard" style="color: #e74c3c;">管理后台</a></li>
+        <li th:if="${session.username}"><a href="/logout" style="color: red;">退出登录</a></li>
+        <li th:unless="${session.username}"><a href="/login" style="color: #3498db;">登录</a></li>
+      </ul>
+    </nav>
+  </div>
+  <main>
+    <h2 th:if="${session.username}" th:text="${session.username} + '，欢迎来到EduVideo学习平台！'"></h2>
+    <h2 th:unless="${session.username}">欢迎来到EduVideo学习平台！</h2>
+    <div class="course-list">
+      <div class="course-item" th:each="course : ${courses}">
+        <img th:src="${course.coverImage}" alt="${course.title} ?: '课程封面图片'" title="${course.title} ?: '课程封面图片'" class="course-image" />
+        <h3 th:text="${course.title}"></h3>
+        <p th:text="${course.description}"></p>
+        <a th:href="@{'/course/' + ${course.id}}" class="btn">立即学习</a>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2026 Edu-Video. All rights reserved.</p>
+  </footer>
+</body>
+
+</html>

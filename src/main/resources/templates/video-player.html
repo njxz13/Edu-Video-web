@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${currentVideo.title + ' - ' + course.title + ' - EduVideo'}"></title>
+    <link rel="stylesheet" th:href="@{/css/video-player.css}">
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">E</div>
+            <div class="nav">
+                <span th:if="${session.username}" class="welcome">欢迎, <span th:text="${session.username}"></span></span>
+                <a href="/home">首页</a>
+                <a href="/profile">个人中心</a>
+                <a href="/logout">退出登录</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="course-info">
+            <h1 th:text="${course.title}"></h1>
+            <p th:text="${course.description}"></p>
+        </div>
+
+        <div class="video-section">
+            <div class="video-list">
+                <h2>课程视频</h2>
+                <div class="video-item" th:each="video : ${videos}"
+                    th:classappend="${video.id == currentVideo.id ? 'active' : ''}">
+                    <a th:href="@{'/course/' + ${course.id} + '/video/' + ${video.id}}">
+                        <span class="video-title" th:text="${video.orderNumber + '. ' + video.title}"></span>
+                        <span class="video-duration" th:text="${video.duration}"></span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="video-player">
+                <h2 th:text="${currentVideo.title}"></h2>
+                <div class="video-container">
+                    <video controls th:src="${currentVideo.videoUrl}" width="100%" height="auto">
+                        您的浏览器不支持视频播放
+                    </video>
+                </div>
+                <div class="video-meta">
+                    <span class="video-duration" th:text="${currentVideo.duration}"></span>
+                    <a th:href="@{'/course/' + ${course.id}}" class="back-btn">返回课程</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Edu-Video. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

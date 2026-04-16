@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${video.title} + ' - EduVideo'">视频详情</title>
+    <link rel="stylesheet" th:href="@{/css/video-detail.css}">
+    <style>
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">EduVideo</div>
+            <div class="nav-links">
+                <a href="/home">首页</a>
+                <a href="/videos">视频广场</a>
+                <a href="/upload">上传视频</a>
+                <a href="/profile">个人中心</a>
+                <a href="/logout" th:if="${session.username}" style="color: red;">退出登录</a>
+                <a href="/login" th:unless="${session.username}" style="color: #3498db;">登录</a>
+            </div>
+        </div>
+    </nav>
+    <!-- 视频播放区 -->
+    <div class="video-player-section">
+        <div class="container">
+            <div class="video-wrapper">
+                <video controls class="video-player" th:src="${video.videoUrl}" 
+                       poster="${video.coverUrl}">
+                    您的浏览器不支持视频播放
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- 视频信息 -->
+    <div class="video-info-section">
+        <div class="container">
+            <h1 class="video-title" th:text="${video.title}">视频标题</h1>
+            
+            <div class="video-meta">
+                <span class="views">
+                    <i class="icon-eye"></i> <span th:text="${video.viewCount}">0</span>次播放
+                </span>
+                <span class="likes">
+                    <i class="icon-like"></i> <span th:text="${video.likeCount}">0</span>点赞
+                </span>
+                <span class="upload-time" th:text="${#dates.format(video.createTime, 'yyyy-MM-dd HH:mm')}">2024-01-01</span>
+            </div>
+
+            <div class="video-description">
+                <h3>简介</h3>
+                <p th:text="${video.description}">视频描述</p>
+            </div>
+
+            <div class="uploader-info">
+                <h4>上传者</h4>
+                <p th:text="${video.uploaderName}">上传者</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推荐视频 -->
+    <div class="recommended-section">
+        <div class="container">
+            <h3>相关推荐</h3>
+            <div class="video-grid">
+                <div class="video-card" th:each="hotVideo : ${hotVideos}">
+                    <a th:href="@{/video/{id}(id=${hotVideo.videoId})}" class="video-link">
+                        <div class="video-cover">
+                            <img th:src="${hotVideo.coverUrl != null ? hotVideo.coverUrl : '/images/default-cover.jpg'}" 
+                                 th:alt="${hotVideo.title}" class="cover-image">
+                        </div>
+                        <div class="video-info">
+                            <h4 class="video-title" th:text="${hotVideo.title}">推荐视频</h4>
+                            <p class="video-meta">
+                                <span class="views" th:text="${hotVideo.viewCount} + '次播放'">0 次播放</span>
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
