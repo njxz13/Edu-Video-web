@@ -2,19 +2,19 @@ package com.example.Edu_Video_web.controller;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.Edu_Video_web.entity.Course;
 import com.example.Edu_Video_web.entity.Video;
 import com.example.Edu_Video_web.mapper.CourseMapper;
 import com.example.Edu_Video_web.mapper.VideoMapper;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@Controller
+@RestController
+@RequestMapping("/api/courses")
 public class CourseController {
 
     @Autowired
@@ -23,48 +23,61 @@ public class CourseController {
     @Autowired
     private VideoMapper videoMapper;
 
-    // 获取所有课程（供首页使用）
-    @GetMapping("/courses")
-    public String getAllCourses(Model model, HttpSession session) {
+    // 获取所有课程
+    @GetMapping
+    public Map<String, Object> getAllCourses(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        if (session.getAttribute("username") == null) {
+            result.put("code", 401);
+            result.put("message", "未登录");
+            return result;
+        }
         List<Course> courses = courseMapper.selectList(null);
-        model.addAttribute("courses", courses);
-        model.addAttribute("username", session.getAttribute("username"));
-        return "home";
+        result.put("code", 200);
+        result.put("data", courses);
+        result.put("username", session.getAttribute("username"));
+        return result;
     }
 
-    // 课程详情页
-    @GetMapping("/course/{id}")
-    public String getCourseDetail(@PathVariable Integer id, Model model, HttpSession session) {
+    // 课程详情
+    @GetMapping("/{id}")
+    public Map<String, Object> getCourseDetail(@PathVariable Integer id, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
         if (session.getAttribute("username") == null) {
-            return "redirect:/login";
+            result.put("code", 401);
+            result.put("message", "未登录");
+            return result;
         }
 
         Course course = courseMapper.selectById(id);
         List<Video> videos = videoMapper.selectByCourseId(id);
 
-        model.addAttribute("course", course);
-        model.addAttribute("videos", videos);
-        model.addAttribute("username", session.getAttribute("username"));
-
-        return "course-detail";
+        result.put("code", 200);
+        result.put("course", course);
+        result.put("videos", videos);
+        return result;
     }
 
-    // 视频播放页
-    @GetMapping("/course/{courseId}/video/{videoId}")
-    public String playVideo(@PathVariable Integer courseId, @PathVariable Integer videoId, Model model, HttpSession session) {
+    // 视频播放信息
+    @GetMapping("/{courseId}/video/{videoId}")
+    public Map<String, Object> playVideo(@PathVariable Integer courseId,
+            @PathVariable Integer videoId,
+            HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
         if (session.getAttribute("username") == null) {
-            return "redirect:/login";
+            result.put("code", 401);
+            result.put("message", "未登录");
+            return result;
         }
 
         Course course = courseMapper.selectById(courseId);
         Video video = videoMapper.selectById(videoId);
         List<Video> videos = videoMapper.selectByCourseId(courseId);
 
-        model.addAttribute("course", course);
-        model.addAttribute("currentVideo", video);
-        model.addAttribute("videos", videos);
-        model.addAttribute("username", session.getAttribute("username"));
-
-        return "video-player";
+        result.put("code", 200);
+        result.put("course", course);
+        result.put("currentVideo", video);
+        result.put("videos", videos);
+        return result;
     }
 }

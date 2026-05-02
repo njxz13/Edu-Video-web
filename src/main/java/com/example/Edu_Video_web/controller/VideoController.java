@@ -2,18 +2,14 @@ package com.example.Edu_Video_web.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.Edu_Video_web.entity.Video;
 import com.example.Edu_Video_web.mapper.VideoMapper;
@@ -23,7 +19,8 @@ import jakarta.servlet.http.HttpSession;
 /**
  * 视频管理控制器
  */
-@Controller
+@RestController
+@RequestMapping("/api/videos")
 public class VideoController {
 
     @Autowired
@@ -34,35 +31,38 @@ public class VideoController {
     private static final String COVER_UPLOAD_DIR = "src/main/resources/static/uploads/covers/";
 
     /**
-     * 视频列表页面
+     * 获取视频列表
      */
-    @GetMapping("/videos")
-    public String videoList(@RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) String keyword,
-            Model model) {
+    @GetMapping
+    public Map<String, Object> getVideoList(
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String keyword) {
+        Map<String, Object> result = new HashMap<>();
         List<Video> videos;
 
         if (keyword != null || categoryId != null) {
-            // 搜索或筛选
             videos = videoMapper.searchVideos(keyword, categoryId);
         } else {
-            // 显示最新视频
             videos = videoMapper.selectLatestVideos(20);
         }
 
-        model.addAttribute("videos", videos);
-        return "video-list";
+        result.put("code", 200);
+        result.put("data", videos);
+        return result;
     }
 
     /**
-     * 视频详情页面
+     * 获取视频详情
      */
-    @GetMapping("/video/{videoId}")
-    public String videoDetail(@PathVariable Integer videoId, Model model) {
+    @GetMapping("/{videoId}")
+    public Map<String, Object> getVideoDetail(@PathVariable Integer videoId) {
+        Map<String, Object> result = new HashMap<>();
         Video video = videoMapper.selectByVideoId(videoId);
 
         if (video == null) {
-            return "redirect:/videos";
+            result.put("code", 404);
+            result.put("message", "视频不存在");
+            return result;
         }
 
         // 增加播放次数
@@ -71,52 +71,59 @@ public class VideoController {
         // 获取热门视频推荐
         List<Video> hotVideos = videoMapper.selectHotVideos(5);
 
-        model.addAttribute("video", video);
-        model.addAttribute("hotVideos", hotVideos);
-
-        return "video-detail";
+        result.put("code", 200);
+        result.put("data", video);
+        result.put("hotVideos", hotVideos);
+        return result;
     }
 
     /**
-     * 显示上传页面
-     */
-    @GetMapping("/upload")
-    public String uploadPage(Model model) {
-        return "upload";
-    }
-
-    /**
-     * 处理视频上传
+     * 上传视频
      */
     @PostMapping("/upload")
-    public String uploadVideo(@RequestParam("title") String title,
+    public Map<String, Object> uploadVideo(
+            @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam("category") Integer categoryId,
             @RequestParam("tags") String tags,
             @RequestParam("videoFile") MultipartFile videoFile,
             @RequestParam(value = "coverFile", required = false) MultipartFile coverFile,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
+            HttpSession session) {
+
+        Map<String, Object> result = new HashMap<>();
 
         try {
+            // 验证登录
+            String username = (String) session.getAttribute("username");
+            Integer userId = (Integer) session.getAttribute("userId");
+
+            if (username == null || userId == null) {
+                result.put("code", 401);
+                result.put("message", "请先登录");
+                return result;
+            }
+
             // 验证文件
             if (videoFile.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "请选择要上传的视频文件");
-                return "redirect:/upload";
+                result.put("code", 400);
+                result.put("message", "请选择要上传的视频文件");
+                return result;
             }
 
             // 验证文件格式
             String originalFilename = videoFile.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
             if (!isValidVideoFormat(fileExtension)) {
-                redirectAttributes.addFlashAttribute("error", "不支持的视频格式，请上传 MP4、AVI 或 MOV 格式");
-                return "redirect:/upload";
+                result.put("code", 400);
+                result.put("message", "不支持的视频格式，请上传 MP4、AVI 或 MOV 格式");
+                return result;
             }
 
             // 验证文件大小（限制 500MB）
             if (videoFile.getSize() > 500 * 1024 * 1024) {
-                redirectAttributes.addFlashAttribute("error", "视频文件大小不能超过 500MB");
-                return "redirect:/upload";
+                result.put("code", 400);
+                result.put("message", "视频文件大小不能超过 500MB");
+                return result;
             }
 
             // 生成唯一文件名
@@ -148,15 +155,6 @@ public class VideoController {
                 coverUrl = "/uploads/covers/" + coverFileName;
             }
 
-            // 获取上传者信息
-            String username = (String) session.getAttribute("username");
-            Integer userId = (Integer) session.getAttribute("userId");
-
-            if (username == null || userId == null) {
-                redirectAttributes.addFlashAttribute("error", "请先登录");
-                return "redirect:/login";
-            }
-
             // 创建视频对象
             Video video = new Video();
             video.setTitle(title);
@@ -169,24 +167,26 @@ public class VideoController {
             video.setTags(tags);
             video.setViewCount(0);
             video.setLikeCount(0);
-            video.setStatus(1); // 直接发布
+            video.setStatus(1);
 
             // 保存到数据库
-            int result = videoMapper.insertVideo(video);
+            int res = videoMapper.insertVideo(video);
 
-            if (result > 0) {
-                redirectAttributes.addFlashAttribute("success", "视频上传成功！");
-                return "redirect:/video/" + video.getVideoId();
+            if (res > 0) {
+                result.put("code", 200);
+                result.put("message", "视频上传成功！");
+                result.put("videoId", video.getVideoId());
             } else {
-                redirectAttributes.addFlashAttribute("error", "视频上传失败，请重试");
-                return "redirect:/upload";
+                result.put("code", 500);
+                result.put("message", "视频上传失败，请重试");
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "上传过程中发生错误：" + e.getMessage());
-            return "redirect:/upload";
+            result.put("code", 500);
+            result.put("message", "上传过程中发生错误：" + e.getMessage());
         }
+        return result;
     }
 
     /**
