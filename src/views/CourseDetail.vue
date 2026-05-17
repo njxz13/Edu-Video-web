@@ -1,13 +1,13 @@
 <template>
   <div class="course-detail">
     <header>
-      <h1>{{ course?.title }}</h1>
+      <h1>{{ course?.title || '加载中...' }}</h1>
       <nav>
         <router-link to="/home">首页</router-link>
         <span>{{ username }}</span>
       </nav>
     </header>
-    <div class="content">
+    <div class="content" v-if="!loading">
       <div class="video-list">
         <h3>课程视频</h3>
         <div v-for="video in videos" :key="video.videoId" class="video-item">
@@ -17,6 +17,7 @@
         </div>
       </div>
     </div>
+    <div v-else class="loading">加载中...</div>
   </div>
 </template>
 
@@ -33,18 +34,21 @@ const userStore = useUserStore()
 const course = ref(null)
 const videos = ref([])
 const username = ref(userStore.username)
+const loading = ref(true)
 
 onMounted(async () => {
   try {
     const res = await getCourseDetail(route.params.id)
     if (res.data.code === 200) {
-      course.value = res.data.course
-      videos.value = res.data.videos
+      course.value = res.data.data.course
+      videos.value = res.data.data.videos
     } else if (res.data.code === 401) {
       router.push('/login')
     }
   } catch (err) {
     console.error(err)
+  } finally {
+    loading.value = false
   }
 })
 </script>
@@ -55,4 +59,5 @@ nav a { color: white; margin-right: 15px; text-decoration: none; }
 .content { padding: 20px; }
 .video-item { padding: 10px; border-bottom: 1px solid #ddd; }
 .video-item a { color: #007bff; text-decoration: none; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>

@@ -7,11 +7,12 @@
         <router-link to="/profile/edit">编辑</router-link>
       </nav>
     </header>
-    <div class="profile-info" v-if="user">
+    <div class="profile-info" v-if="user && !loading">
       <p><strong>用户名:</strong> {{ user.username }}</p>
       <p><strong>邮箱:</strong> {{ user.email }}</p>
       <p><strong>注册时间:</strong> {{ user.createTime }}</p>
     </div>
+    <div v-else-if="loading" class="loading">加载中...</div>
     <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
@@ -23,6 +24,7 @@ import { getProfile } from '../api/auth'
 
 const user = ref(null)
 const error = ref('')
+const loading = ref(true)
 const router = useRouter()
 
 onMounted(async () => {
@@ -37,6 +39,8 @@ onMounted(async () => {
     }
   } catch (err) {
     error.value = '获取信息失败'
+  } finally {
+    loading.value = false
   }
 })
 </script>
@@ -47,4 +51,5 @@ nav a { color: white; margin-left: 15px; text-decoration: none; }
 .profile-info { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
 .profile-info p { margin: 10px 0; }
 .error { color: red; text-align: center; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>

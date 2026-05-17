@@ -6,7 +6,8 @@
         <router-link to="/admin/dashboard">返回</router-link>
       </nav>
     </header>
-    <table>
+    <div v-if="loading" class="loading">加载中...</div>
+    <table v-else>
       <thead>
         <tr>
           <th>ID</th>
@@ -34,6 +35,7 @@ import { ref, onMounted } from 'vue'
 import { getUsers, deleteUser } from '../api/admin'
 
 const users = ref([])
+const loading = ref(true)
 
 const loadUsers = async () => {
   try {
@@ -43,6 +45,8 @@ const loadUsers = async () => {
     }
   } catch (err) {
     console.error(err)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -50,7 +54,8 @@ const handleDelete = async (userId) => {
   if (confirm('确定删除该用户？')) {
     try {
       await deleteUser(userId)
-      loadUsers()
+      loading.value = true
+      await loadUsers()
     } catch (err) {
       alert('删除失败')
     }
@@ -66,4 +71,5 @@ nav a { color: white; text-decoration: none; }
 table { width: 100%; border-collapse: collapse; margin: 20px; }
 th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
 .delete-btn { padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>

@@ -12,10 +12,15 @@
           <input v-model="password" type="password" required />
         </div>
         <div class="form-group">
+          <label>确认密码</label>
+          <input v-model="confirmPassword" type="password" required />
+          <p v-if="passwordMismatch" class="field-error">两次密码输入不一致</p>
+        </div>
+        <div class="form-group">
           <label>邮箱</label>
           <input v-model="email" type="email" required />
         </div>
-        <button type="submit">注册</button>
+        <button type="submit" :disabled="passwordMismatch">注册</button>
         <p class="link">已有账号？<router-link to="/login">立即登录</router-link></p>
         <p v-if="error" class="error">{{ error }}</p>
         <p v-if="success" class="success">{{ success }}</p>
@@ -25,18 +30,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../api/auth'
 
 const username = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const email = ref('')
 const error = ref('')
 const success = ref('')
 const router = useRouter()
 
+const passwordMismatch = computed(() => {
+  return confirmPassword.value && password.value !== confirmPassword.value
+})
+
 const handleRegister = async () => {
+  if (passwordMismatch.value) return
   try {
     const res = await register({ username: username.value, password: password.value, email: email.value })
     if (res.data.code === 200) {
@@ -58,7 +69,9 @@ const handleRegister = async () => {
 .form-group label { display: block; margin-bottom: 5px; }
 .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
 button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 .success { color: green; margin-top: 10px; }
 .error { color: red; margin-top: 10px; }
+.field-error { color: red; font-size: 12px; margin-top: 3px; }
 .link { margin-top: 15px; text-align: center; }
 </style>

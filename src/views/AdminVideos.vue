@@ -6,7 +6,8 @@
         <router-link to="/admin/dashboard">返回</router-link>
       </nav>
     </header>
-    <table>
+    <div v-if="loading" class="loading">加载中...</div>
+    <table v-else>
       <thead>
         <tr>
           <th>ID</th>
@@ -41,6 +42,7 @@ import { ref, onMounted } from 'vue'
 import { getVideos, updateVideoStatus, deleteVideo } from '../api/admin'
 
 const videos = ref([])
+const loading = ref(true)
 
 const loadVideos = async () => {
   try {
@@ -50,6 +52,8 @@ const loadVideos = async () => {
     }
   } catch (err) {
     console.error(err)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -57,7 +61,7 @@ const toggleStatus = async (video) => {
   const newStatus = video.status === 1 ? 0 : 1
   try {
     await updateVideoStatus(video.videoId, newStatus)
-    loadVideos()
+    await loadVideos()
   } catch (err) {
     alert('操作失败')
   }
@@ -67,7 +71,7 @@ const handleDelete = async (videoId) => {
   if (confirm('确定删除该视频？')) {
     try {
       await deleteVideo(videoId)
-      loadVideos()
+      await loadVideos()
     } catch (err) {
       alert('删除失败')
     }
@@ -84,4 +88,5 @@ table { width: 100%; border-collapse: collapse; margin: 20px; }
 th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
 .status-btn { padding: 6px 12px; background: #ffc107; color: black; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
 .delete-btn { padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>

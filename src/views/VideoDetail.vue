@@ -1,12 +1,12 @@
 <template>
   <div class="video-detail">
     <header>
-      <h1>{{ video?.title }}</h1>
+      <h1>{{ video?.title || '加载中...' }}</h1>
       <nav>
         <router-link to="/home">首页</router-link>
       </nav>
     </header>
-    <div class="content">
+    <div class="content" v-if="!loading">
       <video :src="video?.videoUrl" controls autoplay></video>
       <div class="info">
         <p>{{ video?.description }}</p>
@@ -19,6 +19,7 @@
         </div>
       </div>
     </div>
+    <div v-else class="loading">加载中...</div>
   </div>
 </template>
 
@@ -30,16 +31,19 @@ import { getVideoDetail } from '../api/video'
 const route = useRoute()
 const video = ref(null)
 const hotVideos = ref([])
+const loading = ref(true)
 
 onMounted(async () => {
   try {
     const res = await getVideoDetail(route.params.videoId)
     if (res.data.code === 200) {
-      video.value = res.data.data
-      hotVideos.value = res.data.hotVideos || []
+      video.value = res.data.data.video
+      hotVideos.value = res.data.data.hotVideos || []
     }
   } catch (err) {
     console.error(err)
+  } finally {
+    loading.value = false
   }
 })
 </script>
@@ -51,4 +55,5 @@ nav a { color: white; margin-right: 15px; text-decoration: none; }
 video { width: 100%; max-width: 800px; }
 .hot-videos { margin-top: 30px; }
 .hot-item { padding: 8px; border-bottom: 1px solid #ddd; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>

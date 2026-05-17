@@ -8,7 +8,7 @@
       </nav>
     </header>
     <div class="filters">
-      <input v-model="keyword" placeholder="搜索视频..." @input="searchVideos" />
+      <input v-model="keyword" placeholder="搜索视频..." @input="debouncedSearch" />
       <select v-model="categoryId" @change="searchVideos">
         <option value="">全部分类</option>
         <option value="1">前端开发</option>
@@ -16,7 +16,8 @@
         <option value="3">移动开发</option>
       </select>
     </div>
-    <div class="videos">
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else class="videos">
       <div v-for="video in videos" :key="video.videoId" class="video-card">
         <img v-if="video.coverUrl" :src="video.coverUrl" class="cover" />
         <div class="info">
@@ -36,6 +37,13 @@ import { getVideos } from '../api/video'
 const videos = ref([])
 const keyword = ref('')
 const categoryId = ref('')
+const loading = ref(true)
+
+let debounceTimer = null
+const debouncedSearch = () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(searchVideos, 300)
+}
 
 const searchVideos = async () => {
   try {
@@ -51,8 +59,9 @@ const searchVideos = async () => {
   }
 }
 
-onMounted(() => {
-  searchVideos()
+onMounted(async () => {
+  await searchVideos()
+  loading.value = false
 })
 </script>
 
@@ -66,4 +75,5 @@ nav a { color: white; margin-left: 15px; text-decoration: none; }
 .cover { width: 100%; height: 180px; object-fit: cover; }
 .info { padding: 15px; }
 .info a { color: #007bff; text-decoration: none; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>

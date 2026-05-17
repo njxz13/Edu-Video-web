@@ -35,8 +35,8 @@ const handleLogin = async () => {
   try {
     const res = await login({ username: username.value, password: password.value })
     if (res.data.code === 200) {
-      userStore.setUser(res.data)
-      router.push('/')
+      userStore.setUser(res.data.data)
+      router.push('/home')
     } else {
       error.value = res.data.message
     }

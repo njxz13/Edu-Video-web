@@ -27,12 +27,13 @@
         <div class="form-group">
           <label>视频文件</label>
           <input @change="handleVideoChange" type="file" accept="video/*" required />
+          <p v-if="fileError" class="field-error">{{ fileError }}</p>
         </div>
         <div class="form-group">
           <label>封面图（可选）</label>
           <input @change="handleCoverChange" type="file" accept="image/*" />
         </div>
-        <button type="submit">上传</button>
+        <button type="submit" :disabled="uploading">{{ uploading ? '上传中...' : '上传' }}</button>
         <p v-if="error" class="error">{{ error }}</p>
         <p v-if="success" class="success">{{ success }}</p>
       </form>
@@ -53,12 +54,41 @@ const videoFile = ref(null)
 const coverFile = ref(null)
 const error = ref('')
 const success = ref('')
+const uploading = ref(false)
+const fileError = ref('')
 const router = useRouter()
 
-const handleVideoChange = (e) => { videoFile.value = e.target.files[0] }
-const handleCoverChange = (e) => { coverFile.value = e.target.files[0] }
+const handleVideoChange = (e) => {
+  const file = e.target.files[0]
+  fileError.value = ''
+  if (!file) return
+  const maxSize = 500 * 1024 * 1024
+  if (file.size > maxSize) {
+    fileError.value = '视频文件大小不能超过 500MB'
+    videoFile.value = null
+    return
+  }
+  videoFile.value = file
+}
+
+const handleCoverChange = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  const maxSize = 10 * 1024 * 1024
+  if (file.size > maxSize) {
+    fileError.value = '封面图片大小不能超过 10MB'
+    coverFile.value = null
+    return
+  }
+  coverFile.value = file
+}
 
 const handleUpload = async () => {
+  if (!videoFile.value) {
+    error.value = '请选择视频文件'
+    return
+  }
+
   const formData = new FormData()
   formData.append('title', title.value)
   formData.append('description', description.value)
@@ -67,16 +97,20 @@ const handleUpload = async () => {
   formData.append('videoFile', videoFile.value)
   if (coverFile.value) formData.append('coverFile', coverFile.value)
 
+  uploading.value = true
+  error.value = ''
   try {
     const res = await uploadVideo(formData)
     if (res.data.code === 200) {
       success.value = '上传成功！'
-      setTimeout(() => router.push(`/video/${res.data.videoId}`), 1500)
+      setTimeout(() => router.push(`/video/${res.data.data.videoId}`), 1500)
     } else {
       error.value = res.data.message
     }
   } catch (err) {
     error.value = '上传失败'
+  } finally {
+    uploading.value = false
   }
 }
 </script>
@@ -90,6 +124,8 @@ nav a { color: white; text-decoration: none; }
 .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
 textarea { height: 100px; }
 button { padding: 12px 30px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 .error { color: red; margin-top: 10px; }
 .success { color: green; margin-top: 10px; }
+.field-error { color: red; font-size: 12px; margin-top: 3px; }
 </style>

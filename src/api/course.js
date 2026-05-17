@@ -1,10 +1,4 @@
-import axios from 'axios'
-
-const request = axios.create({
-  baseURL: 'http://localhost:8080/api',
-  timeout: 10000,
-  withCredentials: true
-})
+import request from './index'
 
 export const getCourses = () => request.get('/courses')
 export const getCourseDetail = (id) => request.get(`/courses/${id}`)

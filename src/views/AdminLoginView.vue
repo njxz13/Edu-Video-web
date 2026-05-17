@@ -22,16 +22,19 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { adminLogin } from '../api/admin'
+import { useUserStore } from '../store/user'
 
 const username = ref('')
 const password = ref('')
 const error = ref('')
 const router = useRouter()
+const userStore = useUserStore()
 
 const handleLogin = async () => {
   try {
     const res = await adminLogin({ username: username.value, password: password.value })
     if (res.data.code === 200) {
+      userStore.setUser({ username: res.data.data.username, userId: 0 })
       router.push('/admin/dashboard')
     } else {
       error.value = res.data.message

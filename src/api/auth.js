@@ -1,13 +1,7 @@
-import axios from 'axios'
+import request from './index'
 
-const request = axios.create({
-  baseURL: 'http://localhost:8080/api',
-  timeout: 10000,
-  withCredentials: true
-})
-
-export const login = (data) => request.post('/auth/login', null, { params: data })
+export const login = (data) => request.post('/auth/login', new URLSearchParams(data))
 export const logout = () => request.post('/auth/logout')
-export const register = (data) => request.post('/auth/register', null, { params: data })
+export const register = (data) => request.post('/auth/register', new URLSearchParams(data))
 export const getProfile = () => request.get('/auth/profile')
-export const updateProfile = (data) => request.put('/auth/profile', null, { params: data })
+export const updateProfile = (data) => request.put('/auth/profile', new URLSearchParams(data))

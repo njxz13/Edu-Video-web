@@ -6,7 +6,7 @@
         <router-link to="/profile">返回</router-link>
       </nav>
     </header>
-    <div class="form-container" v-if="user">
+    <div class="form-container" v-if="user && !loading">
       <form @submit.prevent="handleUpdate">
         <div class="form-group">
           <label>用户名</label>
@@ -20,11 +20,12 @@
           <label>头像URL（可选）</label>
           <input v-model="avatar" type="text" />
         </div>
-        <button type="submit">保存</button>
+        <button type="submit" :disabled="updating">{{ updating ? '保存中...' : '保存' }}</button>
         <p v-if="error" class="error">{{ error }}</p>
         <p v-if="success" class="success">{{ success }}</p>
       </form>
     </div>
+    <div v-else-if="loading" class="loading">加载中...</div>
   </div>
 </template>
 
@@ -39,6 +40,8 @@ const avatar = ref('')
 const user = ref(null)
 const error = ref('')
 const success = ref('')
+const loading = ref(true)
+const updating = ref(false)
 const router = useRouter()
 
 onMounted(async () => {
@@ -52,10 +55,13 @@ onMounted(async () => {
     }
   } catch (err) {
     error.value = '获取信息失败'
+  } finally {
+    loading.value = false
   }
 })
 
 const handleUpdate = async () => {
+  updating.value = true
   try {
     const res = await updateProfile({
       username: username.value,
@@ -70,6 +76,8 @@ const handleUpdate = async () => {
     }
   } catch (err) {
     error.value = '更新失败'
+  } finally {
+    updating.value = false
   }
 }
 </script>
@@ -82,6 +90,8 @@ nav a { color: white; text-decoration: none; }
 .form-group label { display: block; margin-bottom: 5px; }
 .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
 button { padding: 12px 30px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 .error { color: red; margin-top: 10px; }
 .success { color: green; margin-top: 10px; }
+.loading { text-align: center; padding: 40px; font-size: 18px; color: #666; }
 </style>
