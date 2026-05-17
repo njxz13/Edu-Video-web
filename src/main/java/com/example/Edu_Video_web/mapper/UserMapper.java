@@ -2,6 +2,7 @@ package com.example.Edu_Video_web.mapper;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -22,4 +23,7 @@ public interface UserMapper extends BaseMapper<User> {
 
   @Update("UPDATE users SET username=#{username}, email=#{email}, avatar=#{avatar} WHERE user_id=#{userId}")
   int updateUser(User user);
+
+  @Update("UPDATE users SET password = #{password} WHERE user_id = #{userId}")
+  void updatePassword(@Param("userId") Integer userId, @Param("password") String password);
 }

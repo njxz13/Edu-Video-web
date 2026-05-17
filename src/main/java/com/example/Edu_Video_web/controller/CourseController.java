@@ -1,83 +1,51 @@
 package com.example.Edu_Video_web.controller;
 
-import jakarta.servlet.http.HttpSession;
+import java.util.Map;
+
+import com.example.Edu_Video_web.dto.ApiResponse;
+import com.example.Edu_Video_web.entity.Course;
+import com.example.Edu_Video_web.entity.Video;
+import com.example.Edu_Video_web.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.Edu_Video_web.entity.Course;
-import com.example.Edu_Video_web.entity.Video;
-import com.example.Edu_Video_web.mapper.CourseMapper;
-import com.example.Edu_Video_web.mapper.VideoMapper;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
 
     @Autowired
-    private CourseMapper courseMapper;
+    private CourseService courseService;
 
-    @Autowired
-    private VideoMapper videoMapper;
-
-    // 获取所有课程
     @GetMapping
-    public Map<String, Object> getAllCourses(HttpSession session) {
-        Map<String, Object> result = new HashMap<>();
-        if (session.getAttribute("username") == null) {
-            result.put("code", 401);
-            result.put("message", "未登录");
-            return result;
-        }
-        List<Course> courses = courseMapper.selectList(null);
-        result.put("code", 200);
-        result.put("data", courses);
-        result.put("username", session.getAttribute("username"));
-        return result;
+    public ApiResponse<?> getAllCourses() {
+        List<Course> courses = courseService.getAllCourses();
+        return ApiResponse.success(Map.of("courses", courses));
     }
 
-    // 课程详情
     @GetMapping("/{id}")
-    public Map<String, Object> getCourseDetail(@PathVariable Integer id, HttpSession session) {
-        Map<String, Object> result = new HashMap<>();
-        if (session.getAttribute("username") == null) {
-            result.put("code", 401);
-            result.put("message", "未登录");
-            return result;
+    public ApiResponse<?> getCourseDetail(@PathVariable Integer id) {
+        Course course = courseService.getCourseById(id);
+        if (course == null) {
+            return ApiResponse.error(404, "课程不存在");
         }
-
-        Course course = courseMapper.selectById(id);
-        List<Video> videos = videoMapper.selectByCourseId(id);
-
-        result.put("code", 200);
-        result.put("course", course);
-        result.put("videos", videos);
-        return result;
+        List<Video> videos = courseService.getVideosByCourseId(id);
+        return ApiResponse.success(Map.of("course", course, "videos", videos));
     }
 
-    // 视频播放信息
     @GetMapping("/{courseId}/video/{videoId}")
-    public Map<String, Object> playVideo(@PathVariable Integer courseId,
-            @PathVariable Integer videoId,
-            HttpSession session) {
-        Map<String, Object> result = new HashMap<>();
-        if (session.getAttribute("username") == null) {
-            result.put("code", 401);
-            result.put("message", "未登录");
-            return result;
+    public ApiResponse<?> playVideo(@PathVariable Integer courseId,
+                                     @PathVariable Integer videoId) {
+        Course course = courseService.getCourseById(courseId);
+        Video video = courseService.getVideoById(videoId);
+        if (course == null) {
+            return ApiResponse.error(404, "课程不存在");
         }
-
-        Course course = courseMapper.selectById(courseId);
-        Video video = videoMapper.selectById(videoId);
-        List<Video> videos = videoMapper.selectByCourseId(courseId);
-
-        result.put("code", 200);
-        result.put("course", course);
-        result.put("currentVideo", video);
-        result.put("videos", videos);
-        return result;
+        if (video == null) {
+            return ApiResponse.error(404, "视频不存在");
+        }
+        List<Video> videos = courseService.getVideosByCourseId(courseId);
+        return ApiResponse.success(Map.of("course", course, "currentVideo", video, "videos", videos));
     }
 }

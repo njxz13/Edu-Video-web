@@ -152,15 +152,36 @@ Edu-Video-Web/
 
 ### 核心数据表
 
-| 表名 | 说明 |
-|------|------|
-| `users` | 用户表 - 存储注册用户信息 |
-| `admins` | 管理员表 - 存储后台管理员信息 |
-| `videos` | 视频表 - 存储视频内容及元数据 |
-| `categories` | 分类表 - 视频分类管理 |
-| `courses` | 课程表 - 系统化学课程管理 |
+| 数据名 | 作用说明 | 归属 |
+|--------|----------|------|
+| `users` | 普通用户（学生/观众）账号信息，含用户名、密码、邮箱、头像、状态 | **用户模块** |
+| `admins` | 管理员账号信息，含角色分级（super_admin / admin）、最后登录时间 | **管理员模块** |
+| `course` | 课程信息，含标题、描述、封面图 | **课程模块** |
+| `categories` | 视频分类，支持 parent_id 自引用实现多级树形分类 | **视频模块** |
+| `videos` | 核心视频内容，含标题、URL、封面、上传者、分类、播放/点赞数、标签、状态 | **视频模块** |
+| `video_comments` | 视频评论，支持 parent_id 实现楼中楼回复（待实现） | **视频模块** |
 
-详细字段设计请参考 [需求分析文档](HELP.md)。
+### 表关系说明
+
+```
+users ──┬── videos.uploader_id
+         └── video_comments.user_id
+
+categories ──┬── categories.parent_id（自引用层级）
+              └── videos.category_id
+
+course ── videos.course_id（旧版兼容）
+
+videos ── video_comments.video_id
+video_comments ── parent_id（自引用回复）
+```
+
+所有 SQL 脚本位于 `src/main/resources/db/`，按以下顺序执行：
+
+1. `schema.sql` - 建 `users` 表
+2. `admin_schema.sql` - 建 `admins` 表
+3. `video_schema.sql` - 建 `categories`、`videos`、`video_comments` 表
+4. `init.sql` - 建 `course` 表及初始数据
 
 ## API 接口
 

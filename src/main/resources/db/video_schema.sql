@@ -65,11 +65,11 @@ CREATE TABLE `videos` (
 INSERT INTO `videos` (`title`, `description`, `video_url`, `cover_url`, `uploader_id`, `uploader_name`, 
                       `category_id`, `category_name`, `duration`, `tags`, `view_count`, `like_count`, `status`) VALUES
 ('Java 入门教程 - 第一章：Java 简介', '本课程将带你快速入门 Java 编程语言，了解 Java 的历史、特点和应用场景', 
- '/uploads/videos/demo1.mp4', '/uploads/covers/demo1.jpg', 1, 'admin', 7, 'Java 开发', 600, 'java,入门，编程基础', 1580, 128, 1),
+ '/uploads/videos/demo1.mp4', '/uploads/covers/demo1.jpg', 1, 'admin', 7, 'Java 开发', 600, 'java,入门,编程基础', 1580, 128, 1),
 ('Python 数据分析实战', '使用 Python 进行数据分析的完整教程，涵盖 NumPy、Pandas 等核心库的使用', 
  '/uploads/videos/demo2.mp4', '/uploads/covers/demo2.jpg', 1, 'admin', 8, 'Python 开发', 1800, 'python,数据分析,pandas', 2350, 198, 1),
 ('HTML5+CSS3 网页制作', '从零开始学习 HTML5 和 CSS3，制作精美的响应式网页', 
- '/uploads/videos/demo3.mp4', '/uploads/covers/demo3.jpg', 2, 'test', 9, '前端开发', 2400, 'html5,css3,前端，响应式', 3200, 256, 1);
+ '/uploads/videos/demo3.mp4', '/uploads/covers/demo3.jpg', 2, 'test', 9, '前端开发', 2400, 'html5,css3,前端,响应式', 3200, 256, 1);
 
 -- 创建视频评论表（待实现）
 DROP TABLE IF EXISTS `video_comments`;

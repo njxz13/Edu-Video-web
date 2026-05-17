@@ -1,52 +1,32 @@
 package com.example.Edu_Video_web;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import com.example.Edu_Video_web.controller.LoginController;
+import com.example.Edu_Video_web.controller.VideoController;
+import com.example.Edu_Video_web.controller.AdminController;
+import com.example.Edu_Video_web.controller.CourseController;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import redis.clients.jedis.Jedis;
+import org.springframework.context.ApplicationContext;
 
-import java.util.Map;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class EduVideoWebApplicationTests {
 
-    private Jedis jedis;
+    @Autowired
+    private ApplicationContext context;
 
-    @BeforeEach
-    void setUp() {
-        jedis = new Jedis("localhost", 8989);
-        if(jedis != null) {
-            System.out.println("jedis连接成功!");
-        }else {
-            System.out.println("jedis连接失败!");
-        }
+    @Test
+    void contextLoads() {
+        assertThat(context).isNotNull();
     }
 
     @Test
-    void testString() {
-        String result = jedis.set("name", "pg13");
-        System.out.println(result);
-        String name = jedis.get("name");
-        System.out.println(name);
+    void allControllersAreLoaded() {
+        assertThat(context.getBean(LoginController.class)).isNotNull();
+        assertThat(context.getBean(VideoController.class)).isNotNull();
+        assertThat(context.getBean(AdminController.class)).isNotNull();
+        assertThat(context.getBean(CourseController.class)).isNotNull();
     }
-
-    @Test
-    void testHash() {
-        //插入哈希值
-        jedis.hset("user:1", "name", "sga");
-        jedis.hset("user:1", "age", "19");
-        //获取哈希值
-        Map<String, String> map = jedis.hgetAll(("user:1"));
-        System.out.println(map);
-    }
-
-    @AfterEach
-    void tearDown() {
-        if(jedis != null) {
-            jedis.close();
-            System.out.println("jedis对象已销毁");
-        }
-    }
-
 }

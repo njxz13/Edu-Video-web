@@ -1,8 +1,8 @@
 -- 后台管理模块数据库表
+-- 注意：密码会在项目首次启动时由 DataInitializer 自动升级为 BCrypt 加密
 
 USE `edu-video`;
 
--- 创建管理员表
 DROP TABLE IF EXISTS `admins`;
 
 CREATE TABLE `admins` (
@@ -18,10 +18,6 @@ CREATE TABLE `admins` (
   INDEX `idx_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
 
--- 插入默认管理员账号
 INSERT INTO `admins` (`username`, `password`, `email`, `role`, `status`) VALUES
 ('admin', 'admin123', 'admin@example.com', 'super_admin', 1),
 ('manager', 'manager123', 'manager@example.com', 'admin', 1);
-
--- 更新用户表添加 status 字段
-ALTER TABLE `users` ADD COLUMN `status` TINYINT DEFAULT 1 COMMENT '账号状态（1:正常 0:禁用）' AFTER `email`;

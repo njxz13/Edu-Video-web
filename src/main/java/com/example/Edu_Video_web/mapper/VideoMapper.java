@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -40,7 +41,22 @@ public interface VideoMapper extends BaseMapper<Video> {
             "</if>" +
             "ORDER BY create_time DESC" +
             "</script>")
-    List<Video> searchVideos(String keyword, Integer categoryId);
+    List<Video> searchVideos(@Param("keyword") String keyword, @Param("categoryId") Integer categoryId);
+
+    @Select("<script>" +
+            "SELECT * FROM videos WHERE status = 1 " +
+            "<if test='keyword != null and keyword != \"\"'>" +
+            "AND (title LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%') OR tags LIKE CONCAT('%', #{keyword}, '%')) "
+            +
+            "</if>" +
+            "<if test='categoryId != null'>" +
+            "AND category_id = #{categoryId} " +
+            "</if>" +
+            "ORDER BY create_time DESC " +
+            "LIMIT #{limit} OFFSET #{offset}" +
+            "</script>")
+    List<Video> searchVideosWithPagination(@Param("keyword") String keyword, @Param("categoryId") Integer categoryId,
+                                           @Param("offset") int offset, @Param("limit") int limit);
 
     @Update("UPDATE videos SET view_count = view_count + 1 WHERE video_id = #{videoId}")
     int incrementViewCount(Integer videoId);

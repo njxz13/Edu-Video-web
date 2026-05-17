@@ -2,6 +2,7 @@ package com.example.Edu_Video_web.entity;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import lombok.Data;
@@ -12,6 +13,7 @@ import lombok.Data;
 @Data
 @TableName("admins") // 指定数据库表名
 public class Admin {
+    @TableId
     private Integer adminId; // 管理员 ID
     private String username; // 用户名
     private String password; // 密码
